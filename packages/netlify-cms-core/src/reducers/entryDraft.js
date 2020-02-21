@@ -1,4 +1,4 @@
-import { Map, List, fromJS } from 'immutable';
+import { Map, List, fromJS, is } from 'immutable';
 import uuid from 'uuid/v4';
 import {
   DRAFT_CREATE_FROM_ENTRY,
@@ -90,9 +90,11 @@ const entryDraftReducer = (state = Map(), action) => {
     }
     case DRAFT_CHANGE_FIELD:
       return state.withMutations(state => {
+        const prev = state.getIn((['entry', 'data', action.payload.field]);
         state.setIn(['entry', 'data', action.payload.field], action.payload.value);
         state.mergeDeepIn(['fieldsMetaData'], fromJS(action.payload.metadata));
-        state.set('hasChanged', true);
+        // Only mark changed when data changes. Ignore metadata.
+        is(prev, action.payload.value) || state.set('hasChanged', true);
       });
 
     case DRAFT_VALIDATION_ERRORS:
